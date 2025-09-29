@@ -33,16 +33,7 @@ An OBS Studio plugin that automatically starts and manages external executables 
 
 ### Installing the Plugin
 
-#### Option 1: Automatic Installation (Recommended)
-Run the installation script as Administrator:
-```powershell
-# Right-click PowerShell and "Run as Administrator"
-.\install_plugin.ps1
-```
-
-#### Option 2: Manual Installation
-1. Copy `build_x64\rundir\Release\obs-starter.dll` to `C:\Program Files\obs-studio\obs-plugins\64bit\`
-2. Copy `build_x64\rundir\Release\obs-starter\locale\` to `C:\Program Files\obs-studio\data\obs-plugins\obs-starter\locale\` (if locale files exist)
+Copy the content of the zip file in your obs-studio\obs-plugins\64bit
 
 ## Usage
 
@@ -134,3 +125,4 @@ This project is licensed under the GNU General Public License v2.0. See the sour
 - **1.0.3**: Added exception handling, extra safety checks, and detailed logging
 - **1.0.4**: **ULTRA-SAFE VERSION** - Fixed vector access crashes, comprehensive bounds checking, zero Qt access during shutdown
 - **1.0.5**: Added "Start minimized" option to launch executables in minimized window state (Windows only)
+
