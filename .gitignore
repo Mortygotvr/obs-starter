@@ -1,0 +1,83 @@
+# Exclude everything
+/*
+
+# Except for default project files
+!/.github
+!/build-aux
+!/cmake
+!/data
+!/src
+!.clang-format
+!.gersemirc
+!.gitignore
+!buildspec.json
+!CMakeLists.txt
+!CMakePresets.json
+!LICENSE
+!README.md
+
+# Exclude directories
+/build*/
+/.deps/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.vcxproj*
+*.sln
+
+# Visual Studio files
+.vs/
+x64/
+Release/
+Debug/
+RelWithDebInfo/
+MinSizeRel/
+
+# Generated files
+plugin-support.c
+
+# IDE files
+*.user
+*.suo
+*.vcxproj.filters
+
+# Dependencies and archives
+*.zip
+*.tar.gz
+*.7z
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Package files
+*.deb
+*.rpm
+*.pkg
+
+# Exclude lock files
+*.lock.json
+
+# Exclude CMake build number cache
+/cmake/.CMakeBuildNumber
+
+# Installation scripts can be kept
+!install_plugin.ps1
+!install_plugin.bat
