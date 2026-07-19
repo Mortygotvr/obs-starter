@@ -38,7 +38,7 @@ Copy the content of the zip file in your obs-studio\obs-plugins\64bit
 ## Usage
 
 1. Start OBS Studio
-2. Go to **Tools** ? **OBS Starter Config**
+2. Go to **Tools** > **OBS Starter Config**
 3. Click **Add Executable** to add a new executable configuration
 4. Browse and select the executable file you want to start with OBS
 5. Check/uncheck **Auto-shutdown when OBS closes** as desired
@@ -75,7 +75,8 @@ Copy the content of the zip file in your obs-studio\obs-plugins\64bit
 - Ensure the executables are not blocked by antivirus software
 
 ### OBS Crashes on Exit
-- **? COMPLETELY FIXED in version 1.0.4**: Ultra-safe shutdown with full exception handling
+- **
+-  COMPLETELY FIXED in version 1.0.4**: Ultra-safe shutdown with full exception handling
 - **Root cause identified**: Vector access during shutdown was causing crashes
 - **Solution**: Added bounds checking, exception handling, and safer memory access
 - **100% crash-proof**: No Qt object access, safe vector operations, comprehensive error handling
