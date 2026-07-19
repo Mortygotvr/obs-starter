@@ -38,7 +38,7 @@
     },
     "name": "obs-starter",
     "displayName": "OBS Starter",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "author": "Your Name",
     "website": "https://github.com/yourusername/obs-starter-plugin",
     "email": "your.email@example.com"

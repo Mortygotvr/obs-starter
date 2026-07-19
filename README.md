@@ -125,4 +125,4 @@ This project is licensed under the GNU General Public License v2.0. See the sour
 - **1.0.3**: Added exception handling, extra safety checks, and detailed logging
 - **1.0.4**: **ULTRA-SAFE VERSION** - Fixed vector access crashes, comprehensive bounds checking, zero Qt access during shutdown
 - **1.0.5**: Added "Start minimized" option to launch executables in minimized window state (Windows only)
-
+- **1.0.6**: Added Windows Job Objects support and POSIX process groups to forcefully terminate Python applications, batch scripts, and background child process trees when OBS closes.
