@@ -43,7 +43,11 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 static ConfigDialog *config_dialog = nullptr;
 
 #ifdef _WIN32
-static std::vector<PROCESS_INFORMATION> running_processes;
+struct ProcessHandle {
+    PROCESS_INFORMATION pi;
+    HANDLE hJob;
+};
+static std::vector<ProcessHandle> running_processes;
 #else
 static std::vector<pid_t> running_processes;
 #endif
@@ -72,9 +76,27 @@ static void start_executables()
             pi.hProcess = INVALID_HANDLE_VALUE;
             pi.hThread = INVALID_HANDLE_VALUE;
             
-            if (CreateProcessA(nullptr, (LPSTR)config.path.c_str(), nullptr, nullptr, 
+            // Create a writable buffer for CreateProcessA command line
+            std::vector<char> cmd_line(config.path.begin(), config.path.end());
+            cmd_line.push_back('\0');
+            
+            if (CreateProcessA(nullptr, cmd_line.data(), nullptr, nullptr, 
                              FALSE, 0, nullptr, nullptr, &si, &pi)) {
-                running_processes.push_back(pi);
+                
+                // Create a Job Object to ensure child processes (e.g. Python scripts, background processes)
+                // are terminated automatically when the parent or job handle closes.
+                HANDLE hJob = CreateJobObjectA(nullptr, nullptr);
+                if (hJob != nullptr) {
+                    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = {};
+                    jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                    SetInformationJobObject(hJob, JobObjectExtendedLimitInformation, &jeli, sizeof(jeli));
+                    AssignProcessToJobObject(hJob, pi.hProcess);
+                }
+                
+                ProcessHandle ph;
+                ph.pi = pi;
+                ph.hJob = hJob;
+                running_processes.push_back(ph);
                 obs_log(LOG_INFO, "Started executable%s: %s", 
                        config.start_minimized ? " (minimized)" : "", config.path.c_str());
             } else {
@@ -83,9 +105,8 @@ static void start_executables()
 #else
             pid_t pid = fork();
             if (pid == 0) {
-                // Child process
-                // Note: Minimizing on Linux/macOS would require window manager specific commands
-                // This is a basic implementation that starts the process normally
+                // Child process: create new process group so child subprocesses are tracked together
+                setsid();
                 execl(config.path.c_str(), config.path.c_str(), (char *)nullptr);
                 exit(1);
             } else if (pid > 0) {
@@ -115,12 +136,20 @@ static void stop_executables()
         
         if (should_shutdown) {
 #ifdef _WIN32
-            if (running_processes[i].hProcess != INVALID_HANDLE_VALUE) {
+            if (running_processes[i].pi.hProcess != INVALID_HANDLE_VALUE) {
                 try {
-                    TerminateProcess(running_processes[i].hProcess, 0);
-                    WaitForSingleObject(running_processes[i].hProcess, 1000); // Reduced timeout for shutdown
-                    CloseHandle(running_processes[i].hProcess);
-                    CloseHandle(running_processes[i].hThread);
+                    // First terminate the job object if present.
+                    // This forcefully terminates the main process AND all child processes (Python workers, sub-shells, etc.)
+                    if (running_processes[i].hJob != nullptr) {
+                        TerminateJobObject(running_processes[i].hJob, 0);
+                        CloseHandle(running_processes[i].hJob);
+                        running_processes[i].hJob = nullptr;
+                    }
+                    
+                    TerminateProcess(running_processes[i].pi.hProcess, 0);
+                    WaitForSingleObject(running_processes[i].pi.hProcess, 1000); // Reduced timeout for shutdown
+                    CloseHandle(running_processes[i].pi.hProcess);
+                    CloseHandle(running_processes[i].pi.hThread);
                     
                     // Safe logging without accessing potentially corrupted config
                     obs_log(LOG_INFO, "Stopped executable at index %zu", i);
@@ -131,9 +160,10 @@ static void stop_executables()
 #else
             if (running_processes[i] > 0) {
                 try {
-                    kill(running_processes[i], SIGTERM);
+                    // Kill process group (-pid) to ensure child subprocesses are also killed
+                    kill(-running_processes[i], SIGTERM);
                     usleep(500000); // 0.5 second wait
-                    kill(running_processes[i], SIGKILL);
+                    kill(-running_processes[i], SIGKILL);
                     obs_log(LOG_INFO, "Stopped executable at index %zu", i);
                 } catch (...) {
                     obs_log(LOG_ERROR, "Exception while stopping process %zu", i);
